@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quinfy | AI-Native Identity & Background Verification Platform</title>
+  <meta name="description" content="Quinfy delivers automated, AI-powered identity, biometric liveness, and global background verification across 45+ countries. ISO 27001 & SOC 2 Type II certified.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="three.min.js"></script>
+  <script src="face-data.js"></script>
+  <style>
+    :root {
+      --bg-dark: #050814;
+      --bg-navy: #0B1124;
+      --card-bg: rgba(13, 20, 38, 0.82);
+      --card-border: rgba(56, 189, 248, 0.22);
+      --cyan-glow: #00F0FF;
+      --blue-accent: #38BDF8;
+      --emerald-green: #10B981;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-image: 
+        radial-gradient(circle at 75% 20%, rgba(30, 58, 138, 0.3) 0%, transparent 52%),
+        radial-gradient(circle at 20% 85%, rgba(14, 165, 233, 0.16) 0%, transparent 48%);
+    }
+
+    /* Subtle Architectural Tech Grid */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Global Header */
+    header {
+      position: relative;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.15rem 2.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      background: rgba(5, 8, 20, 0.85);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0284C7, #00F0FF);
+      border-radius: 10px;
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.45);
+    }
+
+    .brand-text {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-tagline {
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      color: #38BDF8;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: -3px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 2.2rem;
+    }
+
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    nav a:hover {
+      color: #FFFFFF;
+    }
+
+    .nav-badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      background: rgba(0, 240, 255, 0.12);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0284C7, #00F0FF);
+      color: #030712;
+      border: none;
+      padding: 0.65rem 1.45rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0, 240, 255, 0.35);
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 26px rgba(0, 240, 255, 0.55);
+      transform: translateY(-1px);
+    }
+
+    /* Main Hero Layout */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+      padding: 2.25rem 2.5rem 3rem 2.5rem;
+      max-width: 1680px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.35fr;
+      gap: 3.5rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Left Copy Column */
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      z-index: 20;
+    }
+
+    .trust-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.4rem 0.9rem;
+      background: rgba(14, 165, 233, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 999px;
+      width: fit-content;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #38BDF8;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00F0FF;
+      box-shadow: 0 0 10px #00F0FF;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    .hero-title {
+      font-size: 3.35rem;
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #FFFFFF 25%, #38BDF8 65%, #00F0FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      line-height: 1.62;
+      color: var(--text-muted);
+      font-weight: 400;
+      max-width: 580px;
+    }
+
+    .cta-group {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .compliance-bar {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .compliance-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .compliance-item svg {
+      width: 16px;
+      height: 16px;
+      color: #38BDF8;
+    }
+
+    /* Right Interactive Visual Stage */
+    .hero-stage {
+      position: relative;
+      width: 100%;
+      height: 670px;
+      border-radius: 26px;
+      background: radial-gradient(circle at 65% 40%, rgba(15, 23, 42, 0.7) 0%, rgba(5, 8, 20, 0.98) 85%);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      box-shadow: 
+        0 30px 70px -15px rgba(0, 0, 0, 0.85),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    /* Three.js Canvas Container */
+    #webgl-canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      cursor: grab;
+    }
+
+    #webgl-canvas-container:active {
+      cursor: grabbing;
+    }
+
+    /* Laser Biometric Scan Beam */
+    .laser-scan-line {
+      position: absolute;
+      left: 4%;
+      width: 92%;
+      height: 2px;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(0, 240, 255, 0.25) 15%, 
+        #00F0FF 45%, 
+        rgba(255, 255, 255, 0.98) 50%,
+        #00F0FF 55%, 
+        rgba(0, 240, 255, 0.25) 85%, 
+        transparent 100%);
+      box-shadow: 
+        0 0 18px 4px rgba(0, 240, 255, 0.75),
+        0 0 36px 8px rgba(0, 240, 255, 0.35);
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+      animation: laserSweep 8.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes laserSweep {
+      0% { top: 12%; opacity: 0; }
+      4% { opacity: 1; }
+      46% { top: 88%; opacity: 1; }
+      50% { top: 90%; opacity: 0; }
+      100% { top: 12%; opacity: 0; }
+    }
+
+    /* Floating Verification Badges */
+    .floating-card {
+      position: absolute;
+      z-index: 10;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      padding: 0.75rem 1.1rem;
+      border-radius: 14px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      pointer-events: auto;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      will-change: transform;
+    }
+
+    .floating-card:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 16px 42px rgba(0, 240, 255, 0.22);
+    }
+
+    /* Card Positions & Floating Animations */
+    .card-liveness {
+      top: 6%;
+      left: 5%;
+      animation: floatA 8s ease-in-out infinite;
+    }
+
+    .card-identity {
+      bottom: 8%;
+      left: 5%;
+      animation: floatB 9s ease-in-out infinite;
+    }
+
+    .card-coverage {
+      top: 6%;
+      right: 5%;
+      animation: floatC 8.5s ease-in-out infinite;
+    }
+
+    .card-clear {
+      bottom: 58%;
+      right: 5%;
+      animation: floatA 9.5s ease-in-out infinite reverse;
+    }
+
+    @keyframes floatA {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(-1deg); }
+    }
+
+    @keyframes floatB {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(8px) rotate(1deg); }
+    }
+
+    @keyframes floatC {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(1.2deg); }
+    }
+
+    .badge-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .badge-icon-box.cyan {
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      color: #00F0FF;
+    }
+
+    .badge-icon-box.emerald {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #10B981;
+    }
+
+    .badge-icon-box.indigo {
+      background: rgba(99, 102, 241, 0.16);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #818CF8;
+    }
+
+    .badge-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .badge-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .badge-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 2px;
+    }
+
+    /* Animated SVG Checkmark */
+    .anim-check-svg {
+      width: 17px;
+      height: 17px;
+      stroke: #10B981;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 0;
+      animation: drawCheck 4.2s infinite ease-in-out;
+    }
+
+    @keyframes drawCheck {
+      0%, 20% { stroke-dashoffset: 24; opacity: 0; }
+      35%, 85% { stroke-dashoffset: 0; opacity: 1; }
+      95%, 100% { stroke-dashoffset: 24; opacity: 0; }
+    }
+
+    /* Live Biometric Checklist Matrix HUD */
+    .checklist-hud {
+      position: absolute;
+      bottom: 6%;
+      right: 5%;
+      z-index: 10;
+      background: rgba(10, 15, 32, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 16px;
+      padding: 1.05rem 1.2rem;
+      width: 275px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65);
+      animation: floatA 10s ease-in-out infinite reverse;
+    }
+
+    .hud-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hud-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #E2E8F0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .hud-live-tag {
+      font-size: 0.65rem;
+      padding: 0.12rem 0.45rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: #10B981;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    .hud-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .hud-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 0.28rem 0.4rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.3s ease;
+    }
+
+    .hud-item.verified {
+      color: #FFFFFF;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .item-label {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .item-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .status-verifying {
+      color: #38BDF8;
+      display: inline-block;
+      animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    .status-done {
+      color: #10B981;
+      font-weight: 700;
+    }
+
+    /* Overall Verification Summary Banner */
+    .hud-verdict {
+      margin-top: 0.7rem;
+      padding: 0.5rem 0.65rem;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(6, 182, 212, 0.18));
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #34D399;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* Floating Interactive Controls Bar */
+    .stage-dock {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      background: rgba(10, 15, 32, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(14px);
+      border-radius: 999px;
+      padding: 0.35rem 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    .dock-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+    }
+
+    .dock-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dock-btn.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: rgba(0, 240, 255, 0.4);
+      color: #00F0FF;
+    }
+
+    .dock-divider {
+      width: 1px;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Modal for Integration Source Code */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-window {
+      background: #0B1124;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 760px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.75rem;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94A3B8;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .modal-close:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #38BDF8;
+      background: #050814;
+      display: block;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow-x: auto;
+      margin-top: 0.75rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+      .hero-stage {
+        height: 560px;
+      }
+      .hero-title {
+        font-size: 2.85rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 1rem 1.25rem;
+      }
+      nav {
+        display: none;
+      }
+      main {
+        padding: 1.25rem 1.25rem 2.5rem 1.25rem;
+      }
+      .hero-title {
+        font-size: 2.25rem;
+      }
+      .hero-stage {
+        height: 480px;
+      }
+      .checklist-hud, .card-clear, .card-coverage {
+        display: none;
+      }
+      .floating-card {
+        padding: 0.5rem 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Global Header -->
+  <header>
+    <a href="#" class="brand-logo">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#030712" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+          <path d="M2 12h20"></path>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span>QUINFY</span>
+        <span class="brand-tagline">AI Identity & Trust Platform</span>
+      </div>
+    </a>
+
+    <nav>
+      <a href="#solutions">Products</a>
+      <a href="#coverage">Global Coverage <span class="nav-badge">45+ Countries</span></a>
+      <a href="#compliance">Security &amp; SOC 2</a>
+      <a href="#developers">Astro / Tailwind API</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="btn-secondary" onclick="openDevModal()">Developer Specs</button>
+      <a href="#demo" class="btn-primary">
+        <span>Book a Demo</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Hero -->
+  <main>
+    <div class="hero-grid">
+      <!-- Left Copy Section -->
+      <div class="hero-content">
+        <div class="trust-chip">
+          <span class="pulse-dot"></span>
+          <span>ISO 27001 • SOC 2 TYPE II CERTIFIED</span>
+        </div>
+
+        <h1 class="hero-title">
+          The AI-Native <br>
+          <span class="gradient-text">Identity &amp; Trust</span> Platform.
+        </h1>
+
+        <p class="hero-desc">
+          Automate biometric liveness verification, KYC/AML screening, and global background cross-checks across 45+ countries. Fast, fraud-proof, and designed for enterprise hyper-growth.
+        </p>
+
+        <div class="cta-group">
+          <a href="#demo" class="btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
+            <span>Start Verification Flow</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <button class="btn-secondary" style="padding: 0.85rem 1.5rem;" onclick="triggerManualScan()">
+            <span>⚡ Trigger Biometric Scan</span>
+          </button>
+        </div>
+
+        <div class="compliance-bar">
+          <div class="compliance-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>SOC 2 Type II Audited</span>
+          </div>
+          <div class="compliance-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span>ISO 27001 Certified</span>
+          </div>
+          <div class="compliance-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+            <span>45+ Supported Jurisdictions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Interactive Visual Stage -->
+      <div class="hero-stage" id="hero-stage">
+        <!-- Laser Biometric Scan Beam Overlay -->
+        <div class="laser-scan-line" id="laser-line"></div>
+
+        <!-- 3D Three.js Container -->
+        <div id="webgl-canvas-container"></div>
+
+        <!-- Card 1: Liveness Passed (Top Left) -->
+        <div class="floating-card card-liveness">
+          <div class="badge-icon-box cyan">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 3H5a2 2 0 0 0-2 2v4m18-6h-4a2 2 0 0 0-2 2v4m-12 10H5a2 2 0 0 1-2-2v-4m18 6h-4a2 2 0 0 1-2-2v-4"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <div class="badge-title">
+              <span>Liveness Passed</span>
+              <svg class="anim-check-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="badge-sub">3D Anti-Spoofing 99.8%</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Identity Verified (Bottom Left) -->
+        <div class="floating-card card-identity">
+          <div class="badge-icon-box emerald">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <div class="badge-title">
+              <span>Identity Verified</span>
+              <svg class="anim-check-svg" viewBox="0 0 24 24" style="animation-delay: 1.2s;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="badge-sub">Govt DB Confirmed</div>
+          </div>
+        </div>
+
+        <!-- Card 3: 45+ Countries (Top Right) -->
+        <div class="floating-card card-coverage">
+          <div class="badge-icon-box indigo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+              <path d="M2 12h20"></path>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <div class="badge-title">
+              <span>45+ Countries</span>
+              <span class="pulse-dot" style="margin-left: 2px;"></span>
+            </div>
+            <div class="badge-sub">Real-Time Global Mesh</div>
+          </div>
+        </div>
+
+        <!-- Card 4: Background Clear (Mid Right) -->
+        <div class="floating-card card-clear">
+          <div class="badge-icon-box emerald">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <path d="m9 15 2 2 4-4"></path>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <div class="badge-title">
+              <span>Background Clear</span>
+              <svg class="anim-check-svg" viewBox="0 0 24 24" style="animation-delay: 2.1s;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="badge-sub">Global Watchlist Clean</div>
+          </div>
+        </div>
+
+        <!-- Card 5: Verification Matrix Checklist HUD (Right Bottom) -->
+        <div class="checklist-hud" id="checklist-hud">
+          <div class="hud-header">
+            <div class="hud-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              <span>AUDIT MATRIX</span>
+            </div>
+            <span class="hud-live-tag">LIVE AUTO-KYC</span>
+          </div>
+
+          <div class="hud-list">
+            <div class="hud-item" id="check-0">
+              <span class="item-label">1. Name &amp; DOB Match</span>
+              <span class="item-status status-done">MATCH ✓</span>
+            </div>
+            <div class="hud-item" id="check-1">
+              <span class="item-label">2. Government ID OCR</span>
+              <span class="item-status status-done">VALID ✓</span>
+            </div>
+            <div class="hud-item" id="check-2">
+              <span class="item-label">3. Biometric Liveness</span>
+              <span class="item-status status-done">PASS ✓</span>
+            </div>
+            <div class="hud-item" id="check-3">
+              <span class="item-label">4. Education Verification</span>
+              <span class="item-status status-done">CLEAR ✓</span>
+            </div>
+            <div class="hud-item" id="check-4">
+              <span class="item-label">5. Employment History</span>
+              <span class="item-status status-done">CLEAR ✓</span>
+            </div>
+            <div class="hud-item" id="check-5">
+              <span class="item-label">6. Global Criminal Check</span>
+              <span class="item-status status-done">CLEAR ✓</span>
+            </div>
+          </div>
+
+          <div class="hud-verdict" id="hud-verdict">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>BACKGROUND CLEAR (100%)</span>
+          </div>
+        </div>
+
+        <!-- Floating Interactive Stage Dock -->
+        <div class="stage-dock">
+          <button class="dock-btn active" id="btn-scan" onclick="triggerManualScan()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line></svg>
+            <span>Biometric Scan</span>
+          </button>
+          <div class="dock-divider"></div>
+          <button class="dock-btn" id="btn-speed" onclick="toggleSpeed()">
+            <span>1.0x Speed</span>
+          </button>
+          <div class="dock-divider"></div>
+          <button class="dock-btn" id="btn-reduced-motion" onclick="toggleReducedMotion()">
+            <span>Motion: On</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Developer Integration Specs Modal -->
+  <div class="modal-backdrop" id="dev-modal">
+    <div class="modal-window">
+      <button class="modal-close" onclick="closeDevModal()">&times;</button>
+      <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem; color: #FFFFFF;">
+        Quinfy Hero Component Integration
+      </h2>
+      <p style="font-size: 0.9rem; color: #94A3B8; margin-bottom: 1.25rem;">
+        Engineered specifically for <strong>Astro + Tailwind</strong> and deployed on Cloudflare Pages per technical specifications.
+      </p>
+
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: #38BDF8; margin-top: 1rem;">1. Lightweight Three.js + Canvas Footprint</h3>
+      <p style="font-size: 0.85rem; color: #CBD5E1; margin-top: 0.35rem;">
+        Zero heavy asset bundles. The 3D biometric face mesh and holographic globe are generated mathematically via procedural algorithms. Total script footprint is under 180 KB gzipped.
+      </p>
+
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: #38BDF8; margin-top: 1rem;">2. Astro Integration Component (`HeroAnimation.astro`)</h3>
+      <pre><code>---
+// src/components/HeroAnimation.astro
+// Lazily boots Three.js point-cloud after initial DOM paint to guarantee 95+ Lighthouse
+---
+&lt;div class="relative w-full h-[670px] rounded-3xl overflow-hidden bg-slate-950 border border-sky-500/20"&gt;
+  &lt;div id="webgl-canvas-container" class="absolute inset-0"&gt;&lt;/div&gt;
+  &lt;!-- Verification Cards Overlay --&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  import { initQuinfyHeroScene } from '../scripts/quinfy-scene.js';
+  window.addEventListener('load', () => {
+    initQuinfyHeroScene(document.getElementById('webgl-canvas-container'));
+  });
+&lt;/script&gt;</code></pre>
+
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: #38BDF8; margin-top: 1rem;">3. Accessibility &amp; Reduced Motion Support</h3>
+      <p style="font-size: 0.85rem; color: #CBD5E1; margin-top: 0.35rem;">
+        Full compliance with <code>prefers-reduced-motion: reduce</code>. Automatically halts vertex oscillations and renders a static holographic point cloud when reduced motion is requested.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Modal Helpers
+    function openDevModal() {
+      document.getElementById('dev-modal').classList.add('open');
+    }
+    function closeDevModal() {
+      document.getElementById('dev-modal').classList.remove('open');
+    }
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('dev-modal');
+      if (e.target === modal) closeDevModal();
+    });
+
+    // Speed & Motion state
+    let animationSpeedMultiplier = 1.0;
+    let reducedMotionActive = false;
+
+    function toggleSpeed() {
+      const btn = document.getElementById('btn-speed');
+      if (animationSpeedMultiplier === 1.0) {
+        animationSpeedMultiplier = 1.75;
+        btn.innerHTML = '<span>1.75x Speed</span>';
+      } else if (animationSpeedMultiplier === 1.75) {
+        animationSpeedMultiplier = 0.5;
+        btn.innerHTML = '<span>0.5x Speed</span>';
+      } else {
+        animationSpeedMultiplier = 1.0;
+        btn.innerHTML = '<span>1.0x Speed</span>';
+      }
+    }
+
+    function toggleReducedMotion() {
+      reducedMotionActive = !reducedMotionActive;
+      const btn = document.getElementById('btn-reduced-motion');
+      btn.innerHTML = reducedMotionActive ? '<span>Motion: Paused</span>' : '<span>Motion: On</span>';
+      btn.classList.toggle('active', reducedMotionActive);
+    }
+
+    // Manual Scan Trigger
+    function triggerManualScan() {
+      const laser = document.getElementById('laser-line');
+      laser.style.animation = 'none';
+      void laser.offsetHeight;
+      laser.style.animation = 'laserSweep 3.5s cubic-bezier(0.4, 0, 0.2, 1)';
+      scanCycleTimer = 0;
+    }
+
+    // Live Checklist Matrix Looper
+    const checkItems = [
+      { id: 'check-0', label: '1. Name & DOB Match', pass: 'MATCH ✓' },
+      { id: 'check-1', label: '2. Government ID OCR', pass: 'VALID ✓' },
+      { id: 'check-2', label: '3. Biometric Liveness', pass: 'PASS ✓' },
+      { id: 'check-3', label: '4. Education Verification', pass: 'CLEAR ✓' },
+      { id: 'check-4', label: '5. Employment History', pass: 'CLEAR ✓' },
+      { id: 'check-5', label: '6. Global Criminal Check', pass: 'CLEAR ✓' }
+    ];
+
+    let checkCycleTime = 0;
+    function updateChecklist(deltaTime) {
+      if (reducedMotionActive) return;
+      checkCycleTime += deltaTime * animationSpeedMultiplier;
+      const cycleDuration = 10.0;
+      const progress = (checkCycleTime % cycleDuration);
+
+      checkItems.forEach((item, index) => {
+        const el = document.getElementById(item.id);
+        const startTime = index * 1.1;
+        const statusSpan = el.querySelector('.item-status');
+
+        if (progress < startTime) {
+          el.className = 'hud-item';
+          statusSpan.className = 'item-status';
+          statusSpan.style.color = '#64748B';
+          statusSpan.innerHTML = 'WAITING';
+        } else if (progress >= startTime && progress < startTime + 0.8) {
+          el.className = 'hud-item';
+          statusSpan.className = 'item-status status-verifying';
+          statusSpan.innerHTML = '⟳ SCAN';
+        } else {
+          el.className = 'hud-item verified';
+          statusSpan.className = 'item-status status-done';
+          statusSpan.innerHTML = item.pass;
+        }
+      });
+
+      const verdict = document.getElementById('hud-verdict');
+      if (progress >= 7.2) {
+        verdict.style.opacity = '1';
+        verdict.style.transform = 'scale(1)';
+        verdict.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 182, 212, 0.25))';
+      } else {
+        verdict.style.opacity = '0.6';
+        verdict.style.transform = 'scale(0.98)';
+        verdict.style.background = 'rgba(255, 255, 255, 0.03)';
+      }
+    }
+
+    // ==========================================
+    // THREE.JS 3D SCENE: FACE + GLOBE + ORBITS
+    // ==========================================
+    let scene, camera, renderer;
+    let faceGroup, facePoints, faceLines, ambientCloud, globeGroup, orbitGroup;
+    let faceGeometry, faceOriginalPositions;
+    let mouseX = 0, mouseY = 0;
+    let targetRotationX = 0, targetRotationY = 0;
+
+    function initThreeScene() {
+      const container = document.getElementById('webgl-canvas-container');
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 670;
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      camera.position.set(0, 0, 8.4);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Mouse Parallax Listeners
+      const stage = document.getElementById('hero-stage');
+      stage.addEventListener('mousemove', (e) => {
+        const rect = stage.getBoundingClientRect();
+        mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouseY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+        targetRotationY = mouseX * 0.25;
+        targetRotationX = -mouseY * 0.16;
+      });
+
+      stage.addEventListener('mouseleave', () => {
+        targetRotationX = 0;
+        targetRotationY = 0;
+      });
+
+      // 1. Photorealistic Biometric Face Mesh
+      createBiometricFaceScan();
+
+      // 2. Holographic Dotted 3D Globe with Arcs & Hubs
+      createHolographicGlobe();
+
+      // 3. Orbit Rings with Travelling Light Photons
+      createOrbitalRings();
+
+      // 4. Ambient Data Dust Cloud
+      createAmbientDataCloud();
+
+      // Window resize
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    // Build the high-definition biometric face point cloud & tight wireframe
+    function createBiometricFaceScan() {
+      faceGroup = new THREE.Group();
+      faceGroup.position.set(-0.88, 0.08, 0.25);
+      faceGroup.rotation.y = 0.14;
+
+      const rawPoints = window.FACE_LANDMARK_POINTS || [];
+      const lineIndices = window.FACE_LATTICE_LINES || [];
+      const pointCount = rawPoints.length;
+
+      const positions = new Float32Array(pointCount * 3);
+      const colors = new Float32Array(pointCount * 3);
+      faceOriginalPositions = [];
+
+      const faceScale = 1.68;
+
+      for (let i = 0; i < pointCount; i++) {
+        const pt = rawPoints[i];
+        const x = pt[0] * faceScale;
+        const y = pt[1] * faceScale;
+        const z = pt[2] * faceScale;
+
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+
+        faceOriginalPositions.push({ x, y, z });
+
+        // Base gradient: Ice-cyan to cobalt
+        const normY = (y + 1.8) / 3.6;
+        colors[i * 3] = 0.0 + 0.12 * normY;
+        colors[i * 3 + 1] = 0.65 + 0.3 * normY;
+        colors[i * 3 + 2] = 0.95 + 0.05 * normY;
+      }
+
+      faceGeometry = new THREE.BufferGeometry();
+      faceGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      faceGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      // Circular glowing particle texture
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.25, 'rgba(0, 240, 255, 0.95)');
+      grad.addColorStop(0.65, 'rgba(2, 132, 199, 0.4)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+      const pTexture = new THREE.CanvasTexture(canvas);
+
+      const pMaterial = new THREE.PointsMaterial({
+        size: 0.065,
+        vertexColors: true,
+        map: pTexture,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      facePoints = new THREE.Points(faceGeometry, pMaterial);
+      faceGroup.add(facePoints);
+
+      // Clean local Delaunay-style wireframe
+      const lineGeom = new THREE.BufferGeometry();
+      lineGeom.setAttribute('position', faceGeometry.attributes.position);
+      lineGeom.setIndex(lineIndices);
+
+      const lineMat = new THREE.LineBasicMaterial({
+        color: 0x0284C7,
+        transparent: true,
+        opacity: 0.16,
+        blending: THREE.AdditiveBlending
+      });
+      faceLines = new THREE.LineSegments(lineGeom, lineMat);
+      faceGroup.add(faceLines);
+
+      scene.add(faceGroup);
+    }
+
+    // Holographic 3D Globe with Hub Nodes and Arcs
+    let hubPointsMesh;
+    function createHolographicGlobe() {
+      globeGroup = new THREE.Group();
+      globeGroup.position.set(1.55, -0.1, -0.3);
+
+      const globeRadius = 1.32;
+
+      // 1. Globe wireframe rings
+      const wireMat = new THREE.LineBasicMaterial({
+        color: 0x0284C7,
+        transparent: true,
+        opacity: 0.2,
+        blending: THREE.AdditiveBlending
+      });
+
+      for (let lat = -60; lat <= 60; lat += 24) {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const r = globeRadius * Math.sin(phi);
+        const y = globeRadius * Math.cos(phi);
+        const ringGeom = new THREE.BufferGeometry();
+        const pts = [];
+        for (let a = 0; a <= Math.PI * 2 + 0.1; a += 0.15) {
+          pts.push(Math.cos(a) * r, y, Math.sin(a) * r);
+        }
+        ringGeom.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+        globeGroup.add(new THREE.Line(ringGeom, wireMat));
+      }
+
+      for (let lon = 0; lon < 180; lon += 36) {
+        const rad = lon * (Math.PI / 180);
+        const ringGeom = new THREE.BufferGeometry();
+        const pts = [];
+        for (let a = 0; a <= Math.PI * 2 + 0.1; a += 0.1) {
+          const x = globeRadius * Math.sin(a) * Math.cos(rad);
+          const y = globeRadius * Math.cos(a);
+          const z = globeRadius * Math.sin(a) * Math.sin(rad);
+          pts.push(x, y, z);
+        }
+        ringGeom.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+        globeGroup.add(new THREE.Line(ringGeom, wireMat));
+      }
+
+      // 2. Continents Dotted Surface Mesh
+      const dotCount = 1400;
+      const dotPositions = [];
+      const dotColors = [];
+      for (let i = 0; i < dotCount; i++) {
+        const phi = Math.acos(1 - 2 * (i + 0.5) / dotCount);
+        const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+        const x = globeRadius * Math.sin(phi) * Math.cos(theta);
+        const y = globeRadius * Math.cos(phi);
+        const z = globeRadius * Math.sin(phi) * Math.sin(theta);
+
+        dotPositions.push(x, y, z);
+        if (i % 6 === 0) {
+          dotColors.push(0.06, 0.9, 0.55);
+        } else {
+          dotColors.push(0.02, 0.65, 0.95);
+        }
+      }
+
+      const dotGeom = new THREE.BufferGeometry();
+      dotGeom.setAttribute('position', new THREE.Float32BufferAttribute(dotPositions, 3));
+      dotGeom.setAttribute('color', new THREE.Float32BufferAttribute(dotColors, 3));
+
+      const dotMat = new THREE.PointsMaterial({
+        size: 0.045,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.88,
+        blending: THREE.AdditiveBlending
+      });
+      globeGroup.add(new THREE.Points(dotGeom, dotMat));
+
+      // 3. Global verification Bezier arcs
+      const hubs = [
+        { lat: 40.7, lon: -74.0 },  // NYC
+        { lat: 51.5, lon: -0.1 },   // London
+        { lat: 25.2, lon: 55.3 },   // Dubai
+        { lat: 19.0, lon: 72.8 },   // Mumbai
+        { lat: 1.35, lon: 103.8 },  // Singapore
+        { lat: 35.6, lon: 139.6 },  // Tokyo
+        { lat: -33.8, lon: 151.2 }, // Sydney
+        { lat: 37.7, lon: -122.4 }  // SF
+      ];
+
+      function latLonToVector3(lat, lon, r) {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        return new THREE.Vector3(
+          -r * Math.sin(phi) * Math.cos(theta),
+          r * Math.cos(phi),
+          r * Math.sin(phi) * Math.sin(theta)
+        );
+      }
+
+      const arcMat = new THREE.LineBasicMaterial({
+        color: 0x00F0FF,
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending
+      });
+
+      const hubPositions = [];
+      for (let i = 0; i < hubs.length; i++) {
+        const next = (i + 1) % hubs.length;
+        const p1 = latLonToVector3(hubs[i].lat, hubs[i].lon, globeRadius);
+        const p2 = latLonToVector3(hubs[next].lat, hubs[next].lon, globeRadius);
+
+        hubPositions.push(p1.x, p1.y, p1.z);
+
+        const mid = p1.clone().add(p2).multiplyScalar(0.5);
+        mid.normalize().multiplyScalar(globeRadius * 1.38);
+
+        const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
+        const points = curve.getPoints(32);
+        const arcGeom = new THREE.BufferGeometry().setFromPoints(points);
+        globeGroup.add(new THREE.Line(arcGeom, arcMat));
+      }
+
+      // Glowing Hub points
+      const hubGeom = new THREE.BufferGeometry();
+      hubGeom.setAttribute('position', new THREE.Float32BufferAttribute(hubPositions, 3));
+      const hubMat = new THREE.PointsMaterial({
+        size: 0.12,
+        color: 0x10B981,
+        transparent: true,
+        blending: THREE.AdditiveBlending
+      });
+      hubPointsMesh = new THREE.Points(hubGeom, hubMat);
+      globeGroup.add(hubPointsMesh);
+
+      scene.add(globeGroup);
+    }
+
+    // Orbital Rings with travelling photons
+    let photonParticles;
+    function createOrbitalRings() {
+      orbitGroup = new THREE.Group();
+      orbitGroup.position.set(0.3, 0, 0);
+
+      const ring1Geom = new THREE.BufferGeometry();
+      const pts1 = [];
+      const rx = 3.9, ry = 2.45;
+      for (let a = 0; a <= Math.PI * 2; a += 0.05) {
+        pts1.push(Math.cos(a) * rx, Math.sin(a) * ry * 0.35, Math.sin(a) * ry);
+      }
+      ring1Geom.setAttribute('position', new THREE.Float32BufferAttribute(pts1, 3));
+      const ring1Mat = new THREE.LineBasicMaterial({
+        color: 0x38BDF8,
+        transparent: true,
+        opacity: 0.28,
+        blending: THREE.AdditiveBlending
+      });
+      orbitGroup.add(new THREE.Line(ring1Geom, ring1Mat));
+
+      const photonCount = 14;
+      const photonPositions = new Float32Array(photonCount * 3);
+      const photonGeom = new THREE.BufferGeometry();
+      photonGeom.setAttribute('position', new THREE.BufferAttribute(photonPositions, 3));
+
+      const photonMat = new THREE.PointsMaterial({
+        size: 0.12,
+        color: 0x00F0FF,
+        transparent: true,
+        blending: THREE.AdditiveBlending
+      });
+      photonParticles = new THREE.Points(photonGeom, photonMat);
+      orbitGroup.add(photonParticles);
+
+      scene.add(orbitGroup);
+    }
+
+    // Ambient floating biometric particle dust
+    function createAmbientDataCloud() {
+      const count = 350;
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 11;
+        positions[i + 1] = (Math.random() - 0.5) * 9;
+        positions[i + 2] = (Math.random() - 0.5) * 6 - 1;
+      }
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({
+        size: 0.035,
+        color: 0x0284C7,
+        transparent: true,
+        opacity: 0.45,
+        blending: THREE.AdditiveBlending
+      });
+      ambientCloud = new THREE.Points(geom, mat);
+      scene.add(ambientCloud);
+    }
+
+    // Animation Loop
+    let clock = new THREE.Clock();
+    let scanCycleTimer = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+
+      // Update Checklist Matrix
+      updateChecklist(delta);
+
+      if (reducedMotionActive) {
+        renderer.render(scene, camera);
+        return;
+      }
+
+      const time = clock.getElapsedTime() * animationSpeedMultiplier;
+
+      // 1. Face breathing, organic micro-tilt, and laser biometric scanline glow
+      if (facePoints && faceOriginalPositions) {
+        const positions = faceGeometry.attributes.position.array;
+        const colors = faceGeometry.attributes.color.array;
+
+        scanCycleTimer += delta * animationSpeedMultiplier;
+        const scanPeriod = 8.5;
+        const scanNorm = (scanCycleTimer % scanPeriod) / scanPeriod;
+        // Map scan beam sweep from top (y ≈ 2.2) to bottom (y ≈ -2.0)
+        const scanCurrentY = 2.2 - scanNorm * 4.4;
+
+        for (let i = 0; i < faceOriginalPositions.length; i++) {
+          const orig = faceOriginalPositions[i];
+          const idx = i * 3;
+
+          // Organic breathing oscillation
+          const breath = Math.sin(time * 1.5 + orig.y * 1.4) * 0.025;
+          positions[idx] = orig.x;
+          positions[idx + 1] = orig.y;
+          positions[idx + 2] = orig.z + breath;
+
+          // Laser scan beam lighting calculation
+          const distToScan = Math.abs(orig.y - scanCurrentY);
+          if (distToScan < 0.22) {
+            const glowFactor = (1.0 - distToScan / 0.22);
+            colors[idx] = 0.2 + glowFactor * 0.8;      // Electric white/cyan
+            colors[idx + 1] = 0.85 + glowFactor * 0.15;
+            colors[idx + 2] = 1.0;
+          } else {
+            // Normal biometric cyan/cobalt gradient
+            const normY = (orig.y + 1.8) / 3.6;
+            colors[idx] = 0.0 + 0.12 * normY;
+            colors[idx + 1] = 0.65 + 0.3 * normY;
+            colors[idx + 2] = 0.95 + 0.05 * normY;
+          }
+        }
+        faceGeometry.attributes.position.needsUpdate = true;
+        faceGeometry.attributes.color.needsUpdate = true;
+
+        // Subtle organic tilt
+        faceGroup.rotation.y = 0.14 + Math.sin(time * 0.5) * 0.06 + (targetRotationY - faceGroup.rotation.y) * 0.05;
+        faceGroup.rotation.x = Math.cos(time * 0.4) * 0.04 + (targetRotationX - faceGroup.rotation.x) * 0.05;
+      }
+
+      // 2. Globe rotation & pulsing
+      if (globeGroup) {
+        globeGroup.rotation.y += 0.0035 * animationSpeedMultiplier;
+        globeGroup.rotation.x = Math.sin(time * 0.25) * 0.04;
+      }
+
+      // 3. Orbit photons travel along ring
+      if (photonParticles) {
+        const pArr = photonParticles.geometry.attributes.position.array;
+        const count = pArr.length / 3;
+        const rx = 3.9, ry = 2.45;
+        for (let i = 0; i < count; i++) {
+          const a = time * 0.75 + (i / count) * Math.PI * 2;
+          pArr[i * 3] = Math.cos(a) * rx;
+          pArr[i * 3 + 1] = Math.sin(a) * ry * 0.35;
+          pArr[i * 3 + 2] = Math.sin(a) * ry;
+        }
+        photonParticles.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // 4. Ambient data dust slow drift
+      if (ambientCloud) {
+        ambientCloud.rotation.y = time * 0.02;
+        ambientCloud.rotation.x = time * 0.01;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('webgl-canvas-container');
+      if (!container || !renderer || !camera) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    // Initialize once DOM is ready
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      animate();
+    });
+  </script>
+</body>
+</html>
